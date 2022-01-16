@@ -1,0 +1,60 @@
+```{r}
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(tidyr)
+library(labelled)
+library(survey)
+library(caret)
+library(cvms)
+library(tibble)
+library(pROC)
+library(DescTools)
+set.seed(1)
+
+```
+
+---
+After making the data usable, a binary regression will be used to explain green voting behaviour based on certain voter characteristics.
+We want to explain is_green (so if the given respondent voted for a green party). The items of the logistic regression were chosen according to the generally mentioned factors in literature.
+
+X003: age - numeric
+X025A_01: education - factor
+F034: religion - factor
+Y002: post-materialism - factor
+E033: self-positioning - numeric
+E027: attending protests - factor
+---
+
+```{r}
+raw.EVS$X025A_01 <- as.factor(raw.EVS$X025A_01)
+raw.EVS$F034 <- as.factor(raw.EVS$F034)
+raw.EVS$Y002 <- as.factor(raw.EVS$Y002)
+raw.EVS$E027 <- as.factor(raw.EVS$E027)
+
+hist(raw.EVS$X003)
+hist(raw.EVS$E033)
+
+logit_model <- glm(is_green ~ X003 + X025A_01 + F034 + Y002 + E033 + E027, data = raw.EVS)
+s <- summary(logit_model)
+
+```
+
+Model evaluation
+
+```{r}
+raw.EVS$Predicted <- predict(logit_model, raw.EVS, type='response')
+
+class_matrix <- table(raw.EVS[,c("is_green", "Predicted")])
+ROC_data <- roc(raw.EVS$is_green, raw.EVS$Predicted)
+summary(ROC_data$thresholds)
+plot(ROC_data)
+ROC_data$auc
+
+regTermTest(logit_model, "F034")
+regTermTest(logit_model, "X003")
+regTermTest(logit_model, "X025A_01")
+regTermTest(logit_model, "F034")
+```
+
+

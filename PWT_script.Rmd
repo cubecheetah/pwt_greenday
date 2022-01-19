@@ -10,6 +10,7 @@ library(cvms)
 library(tibble)
 library(pROC)
 library(DescTools)
+library(sjPlot)
 set.seed(1)
 
 ```
@@ -47,9 +48,10 @@ raw.EVS$Predicted <- predict(logit_model, raw.EVS, type='response')
 
 class_matrix <- table(raw.EVS[,c("is_green", "Predicted")])
 ROC_data <- roc(raw.EVS$is_green, raw.EVS$Predicted)
-summary(ROC_data$thresholds)
+summary(ROC_data)
 plot(ROC_data)
-ROC_data$auc
+
+
 
 regTermTest(logit_model, "F034")
 regTermTest(logit_model, "X003")
@@ -57,4 +59,21 @@ regTermTest(logit_model, "X025A_01")
 regTermTest(logit_model, "F034")
 ```
 
+```{r}
+hist(raw.EVS$X003)
+esquisse::esquisser()
+```
+COR
+```{r}
+na.omit(raw.EVS)
+corr <-  cor(raw.EVS[, c('X003','X025A_01','F034','Y002', 'E033', 'E027')], method = 'pearson')
+corrplot(corr, method = 'color', insig="p-value", addCoef.col = "black", sig.level = 0.05)
+
+raw.EVS <- raw.EVS[!is.na(raw.EVS$E027), -1]
+df.b <- df[!is.na(df$B), -2]
+```
+CONFUSION MATRIX
+```{r}
+
+```
 
